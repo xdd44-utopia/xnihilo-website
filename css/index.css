@@ -8,16 +8,16 @@ video {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 10vh;
-    width: 80vh;
-    height: 80vh;
+    margin-top: calc(50vh - min(40vw, 40vh));
+    width: min(80vw, 80vh);
+    height: min(80vw, 80vh);
 }
 
 #title {
     position: fixed;
-    left: calc((100vw - 80vh) / 2);
+    left: calc((100vw - min(80vw, 80vh)) / 2);
     top: 48vh;
-    width: 80vh;
+    width: min(80vw, 80vh);
     background-color: #00000000;
 }
 
@@ -37,8 +37,8 @@ body {
 
 #contact {
     position: fixed;
-    left: calc((100vw - 80vh) / 2);
-    width: 80vh;
+    left: calc((100vw - min(80vw, 80vh)) / 2);
+    width: min(80vw, 80vh);
     bottom: 4vh;
     text-align: center;
 }
