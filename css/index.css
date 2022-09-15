@@ -1,6 +1,12 @@
+html {
+    overflow: hidden;
+}
+
 body {
-    width: 100vw;
-    height: 100vh;
+    font-family: Arial, sans-serif;
+    background: #FFF;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
 }
 
@@ -26,13 +32,6 @@ h1 {
     text-align: center;
     color: #FFFFFF96;
     background-color: #00000000;
-}
-
-body {
-    font-family: Arial, sans-serif;
-    background: #FFF;
-    width: 100vw;
-    overflow-x: hidden;
 }
 
 #contact {
