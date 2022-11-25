@@ -1,6 +1,6 @@
-import * as THREE from 'three'
-import {OBJLoader} from 'three/addons/loaders/OBJLoader.js'
-import {OrbitControls} from 'three/addons/controls/OrbitControls.js'
+import * as THREE from '../build/three.module.js'
+import {OBJLoader} from '../build/jsm/loaders/OBJLoader.js'
+import {OrbitControls} from '../build/jsm/controls/OrbitControls.js'
 
 var isMobile = window.matchMedia("screen and (max-device-width: 450px) and (max-device-height: 950px)");
 
