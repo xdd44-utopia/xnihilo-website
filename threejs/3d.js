@@ -2,6 +2,9 @@ import * as THREE from '../build/three.module.js'
 import {OBJLoader} from '../build/jsm/loaders/OBJLoader.js'
 import {OrbitControls} from '../build/jsm/controls/OrbitControls.js'
 
+import {Platform} from './platform.js'
+import {Connection} from './connection.js'
+
 var isMobile = window.matchMedia("screen and (max-device-width: 450px) and (max-device-height: 950px)");
 
 let SCREEN_WIDTH = window.innerWidth;
@@ -9,10 +12,11 @@ let SCREEN_HEIGHT = window.innerHeight;
 let aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
 
 let container;
-let camera, scene, renderer;
+export let scene;
+let camera, renderer;
 
-let mainObject;
-let loaded = false;
+let platforms = [];
+let connections = [];
 
 init();
 animate();
@@ -23,29 +27,26 @@ function init() {
 	document.body.appendChild( container );
 
 	scene = new THREE.Scene();
-
+	
 	//
-
-	camera = new THREE.PerspectiveCamera( 50, aspect, 1, 10000 );
-	camera.position.x = 50 * 0.68;
-	camera.position.y = 50 * 0.27;
-	camera.position.z = 50 * 0.68;
-
-	//
-
-	const controls = new OrbitControls(camera, container);
-	controls.maxDistance = isMobile ? 100 : 60;
-	controls.minDistance = isMobile ? 50 : 25;
-	controls.maxPolarAngle = Math.PI / 2;
-	controls.minPolarAngle = Math.PI / 4;
-	controls.panSpeed = 0.8;
-	controls.rotateSpeed = 0.8;
-	controls.zoomSpeed = 0.8;
+	renderer = new THREE.WebGLRenderer( { antialias: true } );
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.type = THREE.BasicShadowMap;
+	renderer.setPixelRatio( window.devicePixelRatio );
+	renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+	container.appendChild( renderer.domElement );
+	renderer.autoClear = false;
 
 	//
 	const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(0, 10, 0);
-    light.target.position.set(-5, 0, 0);
+	light.castShadow = true;
+	light.shadow.camera.left = -50;
+	light.shadow.camera.right = 50;
+	light.shadow.camera.top = 50;
+	light.shadow.camera.bottom = -50;
+	light.shadow.mapSize = new THREE.Vector2(2048, 2048);
+    light.position.set(40, 40, 20);
+    light.target.position.set(0, 0, 0);
     scene.add(light);
     scene.add(light.target);
 
@@ -53,36 +54,44 @@ function init() {
 	scene.add( ambientLight );
 
 	//
-	const material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
-	const loader = new OBJLoader();
-	loader.load(
-		'../models/test.obj',
-		// called when resource is loaded
-		function ( object ) {
-			mainObject = object;
-			scene.add(mainObject);
-			mainObject.scale.x = 1;
-			mainObject.scale.y = 1;
-			mainObject.scale.z = 1;
-			mainObject.material = material;
-		},
-		// called when loading is in progresses
-		function ( xhr ) {
-			loaded = true;
-			console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-		},
-		// called when loading has errors
-		function ( error ) {
-			console.log( 'OBJ loader error' );
-		}
-	);
+
+	camera = new THREE.PerspectiveCamera( 50, aspect, 1, 10000 );
+	camera.position.x = 50 * 0.68;
+	camera.position.y = 50 * 0.27;
+	camera.position.z = 50 * 0.68;
+	camera.lookAt(new THREE.Vector3(0, 5, 0));
 
 	//
-	renderer = new THREE.WebGLRenderer( { antialias: true } );
-	renderer.setPixelRatio( window.devicePixelRatio );
-	renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
-	container.appendChild( renderer.domElement );
-	renderer.autoClear = false;
+
+	const controls = new OrbitControls(camera, container);
+	controls.maxDistance = isMobile ? 60 : 30;
+	controls.minDistance = isMobile ? 20 : 10;
+	controls.maxPolarAngle = Math.PI / 2;
+	controls.minPolarAngle = Math.PI / 4;
+	controls.panSpeed = 0.8;
+	controls.rotateSpeed = 0.8;
+	controls.zoomSpeed = 0.8;
+
+	//
+	const material = new THREE.MeshStandardMaterial({
+		color:0xffffff,
+		wireframe: true,
+	});
+
+	//
+	for (let i = 0; i <= 4; i++) {
+		platforms.push([]);
+		for (let j = 0; j <= 4; j++) {
+			let pos = new THREE.Vector3((i - 2) * 15, Math.random() * 2.5, (j - 2) * 15)
+			let size = new THREE.Vector2(1.5, Math.random() + 0.5).multiplyScalar(8);
+			platforms[i].push(new Platform(pos, size, '../models/test.obj'));
+		}
+	}
+	for (let i = 0; i <= 4; i++) {
+		for (let j = 0; j < 4; j++) {
+			connections.push(new Connection(platforms[i][j], platforms[i][j+1]));
+		}
+	}
 
 	//
 	window.addEventListener( 'resize', onWindowResize );
@@ -131,14 +140,9 @@ function animate() {
 
 function render() {
 
-	if (loaded) {
-		camera.lookAt(mainObject.position);
-	}
-
 	renderer.clear();
 
 	renderer.setViewport(0, 0,SCREEN_WIDTH ,SCREEN_HEIGHT);
 	renderer.render(scene, camera);
 	
-
 }
