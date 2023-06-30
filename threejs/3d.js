@@ -83,13 +83,18 @@ function init() {
 		platforms.push([]);
 		for (let j = 0; j <= 4; j++) {
 			let pos = new THREE.Vector3((i - 2) * 15, Math.random() * 2.5, (j - 2) * 15)
-			let size = new THREE.Vector2(1.5, Math.random() + 0.5).multiplyScalar(8);
-			platforms[i].push(new Platform(pos, size, '../models/test.obj'));
+			let size = new THREE.Vector2(Math.random() + 0.5, Math.random() + 0.5).multiplyScalar(8);
+			platforms[i].push(new Platform(pos, size, '../models/test.obj', Math.random() * Math.PI));
 		}
 	}
 	for (let i = 0; i <= 4; i++) {
-		for (let j = 0; j < 4; j++) {
-			connections.push(new Connection(platforms[i][j], platforms[i][j+1]));
+		for (let j = 0; j <= 4; j++) {
+			if (i < 4 && Math.random() > 0.5) {
+				connections.push(new Connection(platforms[i][j], platforms[i+1][j], true));
+			}
+			if (j < 4 && Math.random() > 0.5) {
+				connections.push(new Connection(platforms[i][j], platforms[i][j+1], false));
+			}
 		}
 	}
 
@@ -139,10 +144,22 @@ function animate() {
 
 
 function render() {
+	update();
 
 	renderer.clear();
 
 	renderer.setViewport(0, 0,SCREEN_WIDTH ,SCREEN_HEIGHT);
 	renderer.render(scene, camera);
 	
+}
+
+function update() {
+	for (let i = 0; i <= 4; i++) {
+		for (let j = 0; j <= 4; j++) {
+			platforms[i][j].updatePosition(new Date().getTime() / 2000);
+		}
+	}
+	for (let i = 0; i < connections.length; i++) {
+		connections[i].connect();
+	}
 }

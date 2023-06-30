@@ -7,27 +7,35 @@ const loader = new OBJLoader();
 
 export class Platform {
 
+	#object;
 	#itemObject;
+
+	#seed;
+	#originalPositon;
+
+	#loaded = false;
+
 	position;
 	size;
 
-	constructor(pos, size, itemPath) {
+	constructor(pos, size, itemPath, seed) {
 
-		this.position = pos;
+		this.#originalPositon = pos;
+		this.#seed = seed;
+		
 		this.size = size;
 
 		const geometry = new THREE.PlaneGeometry(this.size.x, this.size.y);
-		const plane = new THREE.Mesh( geometry, material );
+		this.#object = new THREE.Mesh( geometry, material );
 
-		plane.castShadow = false;
-		plane.receiveShadow = true;
-		plane.rotation.set(Math.PI / 2, 0, 0);
+		this.#object.castShadow = false;
+		this.#object.receiveShadow = true;
+		this.#object.rotation.set(Math.PI / 2, 0, 0);
 
-		plane.position.set(this.position.x, this.position.y, this.position.z);
-
-		scene.add( plane );
+		scene.add( this.#object );
 
 		this.loadItem(itemPath);
+		this.updatePosition(new Date().getTime());
 	}
 
 	loadItem(itemPath) {
@@ -48,8 +56,20 @@ export class Platform {
 		this.#itemObject.material = material;
 		this.#itemObject.traverse(function(child){child.castShadow = true;});
 		this.#itemObject.scale.set(0.1, 0.1, 0.1);
-		this.#itemObject.position.set(this.position.x, this.position.y + 2, this.position.z);
 		scene.add(this.#itemObject);
+		this.#loaded = true;
+	}
+
+	updatePosition(t) {
+		this.position = new THREE.Vector3().copy(this.#originalPositon).add(new THREE.Vector3(0, this.getOffset(t), 0));
+		this.#object.position.set(this.position.x, this.position.y, this.position.z);
+		if (this.#loaded) {
+			this.#itemObject.position.set(this.position.x, this.position.y + 2, this.position.z);
+		}
+	}
+
+	getOffset(t) {
+		return (Math.sin(t + this.#seed) + 1) * 2.5;
 	}
 
 }
